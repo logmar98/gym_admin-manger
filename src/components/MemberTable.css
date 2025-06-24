@@ -1,0 +1,237 @@
+.member-table-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(13, 110, 253, 0.10);
+  overflow: hidden;
+  margin-bottom: 2.5rem;
+}
+
+.table-header {
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  border-bottom: 1.5px solid #e3e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #e9f2ff 60%, transparent 100%);
+}
+
+.table-header h2 {
+  margin: 0;
+  color: #0d6efd;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.export-btn {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(13,110,253,0.08);
+}
+
+.export-btn:hover {
+  background: #0b5ed7;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.member-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+}
+
+.member-table th,
+.member-table td {
+  padding: 1.1rem 1rem;
+  text-align: left;
+  border-bottom: 1.5px solid #e3e8f0;
+}
+
+.member-table th {
+  background-color: #f8faff;
+  font-weight: 700;
+  color: #0d6efd;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.7px;
+  border-top: 1.5px solid #e3e8f0;
+}
+
+.member-table tr:nth-child(even) {
+  background-color: #f6fafd;
+}
+
+.member-table tr:hover {
+  background-color: #e9f2ff;
+}
+
+.status-badge {
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: linear-gradient(90deg, #0d6efd 60%, #198754 100%);
+  box-shadow: 0 2px 8px rgba(13,110,253,0.08);
+}
+
+.payment-status {
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #0d6efd 60%, #dc3545 100%);
+  box-shadow: 0 2px 8px rgba(220,53,69,0.08);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: 6px;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  color: #0d6efd;
+}
+
+.action-btn:hover {
+  background-color: #e9f2ff;
+  box-shadow: 0 2px 8px rgba(13,110,253,0.08);
+}
+
+.view-btn:hover {
+  background-color: #d1ecf1;
+}
+
+.edit-btn:hover {
+  background-color: #fff3cd;
+}
+
+.qr-btn:hover {
+  background-color: #d4edda;
+}
+
+.delete-btn:hover {
+  background-color: #f8d7da;
+}
+
+.status-select {
+  padding: 0.3rem 0.7rem;
+  border: 1.5px solid #ced4da;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.status-select:focus {
+  border-color: #0d6efd;
+  outline: none;
+}
+
+.qr-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.qr-content {
+  background: white;
+  padding: 2.5rem 2rem 2rem 2rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(13, 110, 253, 0.18);
+  min-width: 320px;
+}
+
+.qr-content h3 {
+  margin: 0 0 1rem 0;
+  color: #0d6efd;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.qr-content p {
+  margin: 1rem 0;
+  color: #6c757d;
+  font-family: monospace;
+}
+
+.close-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 1rem;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: #c82333;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.qr-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+}
+
+.print-btn {
+  background: #198754;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.print-btn:hover {
+  background: #157347;
+} 

@@ -1,0 +1,270 @@
+.member-profile {
+  padding: 2.5rem 2rem 2rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  background: #f8f9fa;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.back-btn {
+  background: #f8f9fa;
+  border: 1.5px solid #dee2e6;
+  padding: 0.7rem 1.3rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #0d6efd;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.back-btn:hover {
+  background: #e9f2ff;
+  color: #0b5ed7;
+}
+
+.profile-header h1 {
+  margin: 0;
+  color: #0d6efd;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(13,110,253,0.08);
+}
+
+.header-actions {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.qr-btn {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.3rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.qr-btn:hover {
+  background: #0b5ed7;
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
+}
+
+.profile-section {
+  background: white;
+  border-radius: 14px;
+  padding: 2.5rem 2rem 2rem 2rem;
+  box-shadow: 0 8px 32px rgba(13, 110, 253, 0.10);
+}
+
+.profile-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: #0d6efd;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border-left: 4px solid #0d6efd;
+  padding-left: 0.75rem;
+  background: linear-gradient(90deg, #e9f2ff 60%, transparent 100%);
+  border-radius: 4px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #6c757d;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-item span {
+  color: #212529;
+  font-size: 1.1rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  width: fit-content;
+}
+
+.payment-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: #0d6efd;
+  color: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.qr-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.qr-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.qr-content h3 {
+  margin: 0 0 1rem 0;
+  color: #212529;
+}
+
+.qr-content p {
+  margin: 1rem 0;
+  color: #6c757d;
+}
+
+.qr-instructions {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.close-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.close-btn:hover {
+  background: #c82333;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  font-size: 1.1rem;
+}
+
+.qr-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.print-btn {
+  background: #198754;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.print-btn:hover {
+  background: #157347;
+}
+
+@media (max-width: 768px) {
+  .member-profile {
+    padding: 1rem;
+  }
+  
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+} 

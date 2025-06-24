@@ -1,0 +1,166 @@
+.members-page {
+  padding: 2.5rem 2rem 2rem 2rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  background: #f8f9fa;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #0d6efd;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(13,110,253,0.08);
+}
+
+.add-member-btn {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.3rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(13,110,253,0.08);
+}
+
+.add-member-btn:hover {
+  background: #0b5ed7;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2.5rem 2rem 2rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(13, 110, 253, 0.18);
+  min-width: 340px;
+  max-width: 420px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+  color: #0d6efd;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.close-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-left: 1rem;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: #c82333;
+}
+
+.member-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 700;
+  color: #0d6efd;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input {
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #ced4da;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #f8f9fa;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #0d6efd;
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.submit-btn {
+  background: #198754;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.3rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover {
+  background: #157347;
+}
+
+.cancel-btn {
+  background: #f8f9fa;
+  color: #0d6efd;
+  border: 1.5px solid #dee2e6;
+  padding: 0.7rem 1.3rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #e9f2ff;
+  color: #0b5ed7;
+} 
