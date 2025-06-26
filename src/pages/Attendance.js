@@ -139,7 +139,13 @@ const Attendance = () => {
   };
 
   const handleError = (err) => {
-    setQRError('QR Scan Error: ' + err.message);
+    if (err && err.message) {
+      setQRError('QR Scan Error: ' + err.message);
+    } else if (err) {
+      setQRError('QR Scan Error: ' + String(err));
+    } else {
+      setQRError('QR Scan Error');
+    }
   };
 
   const addAttendanceByMemberId = async (memberId) => {
