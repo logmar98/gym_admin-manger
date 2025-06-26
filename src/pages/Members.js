@@ -93,9 +93,7 @@ const Members = () => {
 
   return (
     <>
-      <div className="main-header">
-        <h1>Members Management</h1>
-      </div>
+
       <div className="main-inner">
         <div className="card">
           <div className="page-header">

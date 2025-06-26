@@ -157,63 +157,78 @@
   .sidebar-layout {
     flex-direction: column;
   }
-  
-  .sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border-default);
-  }
-  
-  .sidebar.collapsed,
-  .sidebar-layout.collapsed .sidebar {
-    width: 100%;
-  }
-  
-  .sidebar-nav {
-    flex-direction: row;
-    padding: var(--spacing-2);
-    gap: var(--spacing-1);
-  }
-  
-  .sidebar-link {
-    flex: 1;
-    justify-content: center;
-    padding: var(--spacing-2);
-    margin: 0;
-    font-size: var(--font-size-small);
-  }
-  
-  .sidebar-link span {
-    display: none;
-  }
-  
-  .sidebar-brand {
-    padding: var(--spacing-2);
-  }
-  
-  .sidebar-title {
-    display: none;
-  }
-  
-  .sidebar-toggle {
-    display: none;
-  }
-  
-  .main-content {
-    margin-left: 0;
-  }
-  
-  .sidebar-layout.collapsed .main-content {
-    margin-left: 0;
-  }
-  
-  .main-header {
-    padding: var(--spacing-3);
-  }
-  
   .main-inner {
-    padding: var(--spacing-3);
+    padding: 0;
   }
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--color-bg-secondary);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border-default);
+    position: sticky;
+    top: 0;
+    z-index: 201;
+  }
+  .mobile-hamburger {
+    background: none;
+    border: none;
+    color: var(--color-fg-default);
+    cursor: pointer;
+    padding: var(--spacing-2);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100vw;
+    width: 240px;
+    max-width: 80vw;
+    height: 100vh;
+    z-index: 202;
+    transition: left 0.3s cubic-bezier(.4,0,.2,1);
+    box-shadow: 2px 0 16px rgba(0,0,0,0.18);
+    border-right: 1px solid var(--color-border-default);
+    background: var(--color-bg-secondary);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar.mobile-open {
+    left: 0;
+  }
+  .sidebar-toggle {
+    display: none !important;
+  }
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.45);
+    z-index: 201;
+    transition: opacity 0.2s;
+  }
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+.sidebar-layout.collapsed .sidebar-brand {
+  justify-content: center;
+}
+
+.sidebar-layout.collapsed .sidebar-logo {
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.sidebar-layout.collapsed .sidebar-link {
+  justify-content: center;
 } 

@@ -9,6 +9,7 @@ import Members from './pages/Members';
 import MemberProfile from './pages/MemberProfile';
 import Payments from './pages/Payments';
 import Attendance from './pages/Attendance';
+import Settings from './pages/Settings';
 import './App.css';
 
 function App() {
@@ -16,22 +17,9 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      }}>
-        <div style={{ 
-          background: 'white', 
-          padding: '2rem', 
-          borderRadius: '10px',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
-        }}>
-          <h2>🏋️ Gym Dashboard</h2>
-          <p>Loading...</p>
-        </div>
+      <div className="github-loading-dark">
+        <div className="loading-spinner" aria-label="Loading" />
+        <div className="github-loading-text">Loading your dashboard...</div>
       </div>
     );
   }
@@ -47,6 +35,7 @@ function App() {
               <Route path="/member/:memberId" element={<MemberProfile />} />
               <Route path="/payments" element={<Payments />} />
               <Route path="/attendance" element={<Attendance />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </SidebarLayout>

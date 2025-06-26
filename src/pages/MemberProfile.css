@@ -44,6 +44,8 @@
 .header-actions {
   display: flex;
   gap: var(--spacing-3);
+  justify-content: flex-end;
+  flex: 1;
 }
 
 .qr-btn {

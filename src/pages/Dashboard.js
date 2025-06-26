@@ -33,7 +33,18 @@ const Dashboard = () => {
         query(collection(db, 'logs'), where('date', '==', today))
       );
       const todayAttendance = logsSnapshot.size;
-      const monthlyRevenue = totalMembers * 50;
+
+      // Calculate monthly revenue from payments collection
+      const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+      const thisMonth = dayjs().format('YYYY-MM');
+      let monthlyRevenue = 0;
+      paymentsSnapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.date && dayjs(data.date).format('YYYY-MM') === thisMonth) {
+          monthlyRevenue += Number(data.amount) || 0;
+        }
+      });
+
       const pendingPayments = Math.floor(totalMembers * 0.2);
       setStats({
         totalMembers,
@@ -90,16 +101,13 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="main-header">
-        <h1>Dashboard</h1>
-        <p>Welcome to your gym management dashboard</p>
-      </div>
+
       <div className="main-inner">
         <div className="card stats-grid">
           <StatCard
             title="Total Members"
             value={stats.totalMembers}
-            icon="�"
+            icon="👥"
             color="#0d6efd"
           />
           <StatCard
@@ -116,7 +124,7 @@ const Dashboard = () => {
           />
           <StatCard
             title="Monthly Revenue"
-            value={`$${stats.monthlyRevenue}`}
+            value={`${stats.monthlyRevenue} dh`}
             icon="💰"
             color="#dc3545"
           />

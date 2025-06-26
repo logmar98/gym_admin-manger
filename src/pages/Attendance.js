@@ -90,15 +90,16 @@ const Attendance = () => {
   const exportAttendanceCSV = () => {
     const filteredLogs = getFilteredLogs();
     const headers = ['Date', 'Time', 'Member Name', 'Member Email', 'Member ID'];
+    const escapeCSV = (value) => '"' + String(value).replace(/"/g, '""') + '"';
     const csvContent = [
-      headers.join(','),
+      headers.map(escapeCSV).join(','),
       ...filteredLogs.map(log => [
         dayjs(log.timestamp?.toDate()).format('MMM DD, YYYY'),
         dayjs(log.timestamp?.toDate()).format('HH:mm:ss'),
         log.memberName,
         log.memberEmail,
         log.memberId
-      ].join(','))
+      ].map(escapeCSV).join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -206,9 +207,7 @@ const Attendance = () => {
 
   return (
     <>
-      <div className="main-header">
-        <h1>Attendance Log</h1>
-      </div>
+
       <div className="main-inner">
         <div className="card">
           <div className="page-header">

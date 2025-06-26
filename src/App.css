@@ -66,3 +66,55 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: #6c757d;
 }
+
+.github-loading-dark {
+  min-height: 100vh;
+  width: 100vw;
+  background: #0d1117;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+.github-logo-anim {
+  margin-bottom: 2rem;
+  animation: github-bounce 1.2s infinite cubic-bezier(.36,.07,.19,.97);
+}
+
+@keyframes github-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-18px);
+  }
+}
+
+.github-loading-text {
+  color: #c9d1d9;
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.loading-spinner {
+  width: 56px;
+  height: 56px;
+  border: 6px solid #30363d;
+  border-top: 6px solid #58a6ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 2rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

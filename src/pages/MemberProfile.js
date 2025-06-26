@@ -12,6 +12,7 @@ const MemberProfile = () => {
   const navigate = useNavigate();
   const [member, setMember] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
+  const [paymentHistory, setPaymentHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
 
@@ -33,6 +34,17 @@ const MemberProfile = () => {
         const logsSnapshot = await getDocs(logsQuery);
         const attendanceDates = logsSnapshot.docs.map(doc => doc.data().date);
         setAttendanceData(attendanceDates);
+
+        // Fetch payment history
+        const paymentsQuery = query(
+          collection(db, 'payments'),
+          where('memberId', '==', memberId)
+        );
+        const paymentsSnapshot = await getDocs(paymentsQuery);
+        const payments = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Sort by date descending
+        payments.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setPaymentHistory(payments);
       } catch (error) {
         console.error('Error fetching member data:', error);
       } finally {
@@ -93,9 +105,6 @@ const MemberProfile = () => {
       <div className="main-inner">
         <div className="card">
           <div className="profile-header">
-            <button onClick={() => navigate('/members')} className="back-btn">
-              ← Back to Members
-            </button>
             <h1>{member.name}</h1>
             <div className="header-actions">
               <button onClick={() => setShowQR(true)} className="qr-btn">
@@ -177,6 +186,34 @@ const MemberProfile = () => {
 
             <div className="profile-section">
               <CalendarHeatmap attendanceData={attendanceData} />
+            </div>
+
+            <div className="profile-section">
+              <h2>Payment History</h2>
+              {paymentHistory.length === 0 ? (
+                <div className="no-records">No payments found for this member.</div>
+              ) : (
+                <div className="table-wrapper">
+                  <table className="payments-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paymentHistory.map(payment => (
+                        <tr key={payment.id}>
+                          <td>{dayjs(payment.date).format('MMM DD, YYYY')}</td>
+                          <td>{payment.amount}</td>
+                          <td>{payment.method || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>

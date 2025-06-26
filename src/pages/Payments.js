@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, getDoc, query, where, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import dayjs from 'dayjs';
 import './Payments.css';
@@ -9,9 +9,36 @@ const Payments = () => {
   const [loading, setLoading] = useState(true);
   const [sortField, setSortField] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [allPayments, setAllPayments] = useState([]);
+  const [loadingPayments, setLoadingPayments] = useState(true);
 
   useEffect(() => {
     fetchMembers();
+    const fetchAllPayments = async () => {
+      setLoadingPayments(true);
+      try {
+        const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+        const payments = [];
+        for (const docSnap of paymentsSnapshot.docs) {
+          const payment = { id: docSnap.id, ...docSnap.data() };
+          // Fetch member name
+          let memberName = '';
+          if (payment.memberId) {
+            const memberDoc = await getDoc(doc(db, 'members', payment.memberId));
+            memberName = memberDoc.exists() ? memberDoc.data().name : '';
+          }
+          payments.push({ ...payment, memberName });
+        }
+        // Sort by date descending
+        payments.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setAllPayments(payments);
+      } catch (err) {
+        // Optionally handle error
+      } finally {
+        setLoadingPayments(false);
+      }
+    };
+    fetchAllPayments();
   }, []);
 
   const fetchMembers = async () => {
@@ -52,6 +79,21 @@ const Payments = () => {
         }
       }
       await updateDoc(memberRef, updateData);
+
+      // Fetch price from settings
+      const priceSnapshot = await getDocs(collection(db, 'price'));
+      let price = 0;
+      if (!priceSnapshot.empty) {
+        price = priceSnapshot.docs[0].data().price || 0;
+      }
+      // Add payment record
+      await addDoc(collection(db, 'payments'), {
+        memberId,
+        amount: price,
+        date: new Date().toISOString(),
+        method: 'cash'
+      });
+
       fetchMembers(); // Refresh the list
     } catch (error) {
       console.error('Error updating payment:', error);
@@ -79,19 +121,19 @@ const Payments = () => {
   };
 
   const exportPaymentsCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Last Payment', 'Days Since Payment', 'Status'];
+    const headers = ['Name', 'Email', 'Phone', 'Last Payment', 'Status'];
+    const escapeCSV = (value) => '"' + String(value).replace(/"/g, '""') + '"';
     const csvContent = [
-      headers.join(','),
+      headers.map(escapeCSV).join(','),
       ...members.map(member => {
         const paymentStatus = getPaymentStatus(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate);
         return [
-          member.name,
-          member.email,
-          member.phone,
+          member.name || '',
+          member.email || '',
+          member.phone || '',
           member.lastPaymentDate ? dayjs(member.lastPaymentDate).format('MMM DD, YYYY') : 'No Payment',
-          paymentStatus.days,
-          paymentStatus.status
-        ].join(',');
+          paymentStatus.status || ''
+        ].map(escapeCSV).join(',');
       })
     ].join('\n');
 
@@ -190,6 +232,28 @@ const Payments = () => {
     }
   };
 
+  // Export all payments to CSV
+  const exportAllPaymentsCSV = () => {
+    const headers = ['Date', 'Member Name', 'Amount', 'Method'];
+    const escapeCSV = (value) => '"' + String(value).replace(/"/g, '""') + '"';
+    const csvContent = [
+      headers.map(escapeCSV).join(','),
+      ...allPayments.map(payment => [
+        dayjs(payment.date).format('MMM DD, YYYY'),
+        payment.memberName,
+        payment.amount,
+        payment.method || '-'
+      ].map(escapeCSV).join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `all-payments-${dayjs().format('YYYY-MM-DD')}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return <div className="loading">Loading payments...</div>;
   }
@@ -199,9 +263,7 @@ const Payments = () => {
 
   return (
     <>
-      <div className="main-header">
-        <h1>Payments Management</h1>
-      </div>
+
       <div className="main-inner">
         <div className="card">
           <div className="page-header">
@@ -358,6 +420,41 @@ const Payments = () => {
             </div>
           </div>
 
+          {/* Global Payments Report */}
+          <div className="payments-section">
+            <h2>All Payments</h2>
+            <button onClick={exportAllPaymentsCSV} className="export-btn" style={{ marginBottom: 16 }}>
+              📊 Export All Payments CSV
+            </button>
+            {loadingPayments ? (
+              <div className="loading">Loading all payments...</div>
+            ) : allPayments.length === 0 ? (
+              <div className="no-records">No payments found.</div>
+            ) : (
+              <div className="table-wrapper">
+                <table className="payments-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Member Name</th>
+                      <th>Amount</th>
+                      <th>Method</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allPayments.map(payment => (
+                      <tr key={payment.id}>
+                        <td>{dayjs(payment.date).format('MMM DD, YYYY')}</td>
+                        <td>{payment.memberName}</td>
+                        <td>{payment.amount}</td>
+                        <td>{payment.method || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
 
         </div>
       </div>

@@ -1,8 +1,11 @@
 .calendar-heatmap {
-  background: white;
+  background: #161b22;
   border-radius: 10px;
   padding: 2rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --cell-size: 2.2vw;
+  --cell-gap: 1.5px;
+  color: #c9d1d9;
 }
 
 .calendar-header {
@@ -14,12 +17,13 @@
 
 .calendar-header h3 {
   margin: 0;
-  color: #212529;
+  color: #c9d1d9;
 }
 
 .legend {
   display: flex;
   gap: 1rem;
+  align-items: center;
 }
 
 .legend-item {
@@ -34,7 +38,7 @@
   width: 16px;
   height: 16px;
   border-radius: 3px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #30363d;
 }
 
 .calendar-container {
@@ -82,39 +86,71 @@
 
 .weeks-container {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  gap: 0;
   flex: 1;
 }
 
 .week {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.week.month-separator {
+  border-left: 2px solid #30363d;
+  margin-left: 4px;
 }
 
 .day {
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
+  width: var(--cell-size, 2.2vw);
+  height: var(--cell-size, 2.2vw);
+  min-width: 14px;
+  min-height: 14px;
+  max-width: 22px;
+  max-height: 22px;
+  border-radius: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.7rem;
-  color: #212529;
+  color: #c9d1d9;
   cursor: pointer;
   transition: transform 0.2s ease;
-  border: 1px solid transparent;
+  border: 1px solid #21262d;
+  margin: var(--cell-gap, 1.5px);
+  padding: 0;
+  background: transparent;
 }
 
 .day:hover {
   transform: scale(1.2);
-  border-color: #212529;
+  border-color: #c9d1d9;
+  z-index: 2;
+}
+
+.month-title {
+  color: #8b949e !important;
+}
+
+.calendar-month-row {
+  margin-bottom: 0.5rem;
+}
+
+/* GitHub dark mode green palette */
+:root {
+  --gh-dark-0: #161b22;
+  --gh-dark-1: #0e4429;
+  --gh-dark-2: #006d32;
+  --gh-dark-3: #26a641;
+  --gh-dark-4: #39d353;
 }
 
 @media (max-width: 768px) {
   .calendar-heatmap {
     padding: 1rem;
+    --cell-size: 14px;
+    --cell-gap: 1px;
   }
   
   .calendar-header {
