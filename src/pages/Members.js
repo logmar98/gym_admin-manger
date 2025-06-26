@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, orderBy, limit, startAfter } from 'firebase/firestore';
 import { db } from '../firebase';
 import MemberTable from '../components/MemberTable';
 import './Members.css';
@@ -19,18 +19,30 @@ const Members = () => {
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchMembers();
   }, []);
 
-  const fetchMembers = async () => {
+  const fetchMembers = async (reset = true) => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, 'members'));
+      let q = query(collection(db, 'members'), orderBy('name'), limit(10));
+      if (!reset && lastVisible) {
+        q = query(collection(db, 'members'), orderBy('name'), startAfter(lastVisible), limit(10));
+      }
+      const querySnapshot = await getDocs(q);
       const membersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setMembers(membersData);
+      if (reset) {
+        setMembers(membersData);
+      } else {
+        setMembers(prev => [...prev, ...membersData]);
+      }
+      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+      setHasMore(querySnapshot.docs.length === 10);
     } catch (error) {
       console.error('Error fetching members:', error);
     } finally {
@@ -40,9 +52,16 @@ const Members = () => {
 
   const handleAddMember = async (e) => {
     e.preventDefault();
+    if (!formData.name.trim()) {
+      // Name is required
+      return;
+    }
     try {
       await addDoc(collection(db, 'members'), {
-        ...formData,
+        name: formData.name,
+        email: formData.email.trim() === '' ? 'None' : formData.email,
+        phone: formData.phone.trim() === '' ? 'None' : formData.phone,
+        joinDate: formData.joinDate,
         status: 'active',
         createdAt: new Date(),
         updatedAt: new Date()
@@ -73,6 +92,10 @@ const Members = () => {
 
   const handleViewProfile = (member) => {
     navigate(`/member/${member.id}`, { state: { member } });
+  };
+
+  const handleShowMore = () => {
+    fetchMembers(false);
   };
 
   // Search and sort logic
@@ -149,24 +172,22 @@ const Members = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="email">Email *</label>
+                    <label htmlFor="email">Email</label>
                     <input
                       type="email"
                       id="email"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      required
                       placeholder="Enter email address"
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="phone">Phone Number *</label>
+                    <label htmlFor="phone">Phone Number</label>
                     <input
                       type="tel"
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                      required
                       placeholder="Enter phone number"
                     />
                   </div>
@@ -204,7 +225,7 @@ const Members = () => {
             members={sortedMembers}
             onEditMember={handleEditMember}
             onViewProfile={handleViewProfile}
-            refreshMembers={fetchMembers}
+            refreshMembers={() => fetchMembers(true)}
             sortField={sortField}
             sortOrder={sortOrder}
             onSortField={field => {
@@ -216,6 +237,11 @@ const Members = () => {
               }
             }}
           />
+          {hasMore && !loading && (
+            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+              <button className="btn btn-primary" onClick={handleShowMore}>Show More</button>
+            </div>
+          )}
         </div>
       </div>
     </>

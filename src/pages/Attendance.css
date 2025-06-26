@@ -6,8 +6,10 @@
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: var(--spacing-3);
   margin-bottom: var(--spacing-5);
   padding: var(--spacing-4) 0;
 }
@@ -21,10 +23,12 @@
 
 .header-actions {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: var(--spacing-3);
-  width: 100%;
+  width: auto;
+  min-width: 220px;
 }
 
 .attendance-header-left {
@@ -475,10 +479,18 @@
 }
 
 @media (max-width: 900px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) 0;
+  }
   .header-actions {
-    flex-wrap: wrap;
-    gap: 1rem;
     width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-2);
   }
   .attendance-header-left {
     flex-wrap: wrap;

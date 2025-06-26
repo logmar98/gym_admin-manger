@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, updateDoc, doc, getDoc, query, where, addDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, getDoc, query, where, addDoc, orderBy, limit, startAfter } from 'firebase/firestore';
 import { db } from '../firebase';
 import dayjs from 'dayjs';
 import './Payments.css';
@@ -11,34 +11,12 @@ const Payments = () => {
   const [sortOrder, setSortOrder] = useState('asc');
   const [allPayments, setAllPayments] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(true);
+  const [lastPaymentVisible, setLastPaymentVisible] = useState(null);
+  const [hasMorePayments, setHasMorePayments] = useState(true);
 
   useEffect(() => {
     fetchMembers();
-    const fetchAllPayments = async () => {
-      setLoadingPayments(true);
-      try {
-        const paymentsSnapshot = await getDocs(collection(db, 'payments'));
-        const payments = [];
-        for (const docSnap of paymentsSnapshot.docs) {
-          const payment = { id: docSnap.id, ...docSnap.data() };
-          // Fetch member name
-          let memberName = '';
-          if (payment.memberId) {
-            const memberDoc = await getDoc(doc(db, 'members', payment.memberId));
-            memberName = memberDoc.exists() ? memberDoc.data().name : '';
-          }
-          payments.push({ ...payment, memberName });
-        }
-        // Sort by date descending
-        payments.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setAllPayments(payments);
-      } catch (err) {
-        // Optionally handle error
-      } finally {
-        setLoadingPayments(false);
-      }
-    };
-    fetchAllPayments();
+    fetchAllPayments(true);
   }, []);
 
   const fetchMembers = async () => {
@@ -53,6 +31,39 @@ const Payments = () => {
       console.error('Error fetching members:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAllPayments = async (reset = true) => {
+    setLoadingPayments(true);
+    try {
+      let q = query(collection(db, 'payments'), orderBy('date', 'desc'), limit(10));
+      if (!reset && lastPaymentVisible) {
+        q = query(collection(db, 'payments'), orderBy('date', 'desc'), startAfter(lastPaymentVisible), limit(10));
+      }
+      const paymentsSnapshot = await getDocs(q);
+      const payments = [];
+      for (const docSnap of paymentsSnapshot.docs) {
+        const payment = { id: docSnap.id, ...docSnap.data() };
+        // Fetch member name
+        let memberName = '';
+        if (payment.memberId) {
+          const memberDoc = await getDoc(doc(db, 'members', payment.memberId));
+          memberName = memberDoc.exists() ? memberDoc.data().name : '';
+        }
+        payments.push({ ...payment, memberName });
+      }
+      if (reset) {
+        setAllPayments(payments);
+      } else {
+        setAllPayments(prev => [...prev, ...payments]);
+      }
+      setLastPaymentVisible(paymentsSnapshot.docs[paymentsSnapshot.docs.length - 1]);
+      setHasMorePayments(paymentsSnapshot.docs.length === 10);
+    } catch (err) {
+      // Optionally handle error
+    } finally {
+      setLoadingPayments(false);
     }
   };
 
@@ -254,6 +265,10 @@ const Payments = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleShowMorePayments = () => {
+    fetchAllPayments(false);
+  };
+
   if (loading) {
     return <div className="loading">Loading payments...</div>;
   }
@@ -431,6 +446,7 @@ const Payments = () => {
             ) : allPayments.length === 0 ? (
               <div className="no-records">No payments found.</div>
             ) : (
+              <>
               <div className="table-wrapper">
                 <table className="payments-table">
                   <thead>
@@ -453,6 +469,12 @@ const Payments = () => {
                   </tbody>
                 </table>
               </div>
+              {hasMorePayments && !loadingPayments && (
+                <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                  <button className="btn btn-primary" onClick={handleShowMorePayments}>Show More</button>
+                </div>
+              )}
+              </>
             )}
           </div>
 

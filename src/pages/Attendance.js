@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, query, orderBy, limit, where, addDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, where, addDoc, startAfter, getCountFromServer } from 'firebase/firestore';
 import { db } from '../firebase';
 import dayjs from 'dayjs';
 import './Attendance.css';
@@ -15,21 +15,129 @@ const Attendance = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [monthCount, setMonthCount] = useState(0);
+  const [todayCount, setTodayCount] = useState(0);
+  const [weekCount, setWeekCount] = useState(0);
 
   useEffect(() => {
-    fetchAttendanceLogs();
+    fetchStats();
+    fetchAttendanceLogs(true);
     fetchMembers();
-  }, []);
+  }, [filter]);
 
-  const fetchAttendanceLogs = async () => {
+  const fetchStats = async () => {
+    const now = dayjs();
+    // All time
+    const totalSnap = await getCountFromServer(collection(db, 'logs'));
+    setTotalCount(totalSnap.data().count);
+    // Month
+    const startOfMonth = now.startOf('month').toDate();
+    const endOfMonth = now.endOf('month').toDate();
+    const monthQuery = query(
+      collection(db, 'logs'),
+      where('timestamp', '>=', startOfMonth),
+      where('timestamp', '<=', endOfMonth)
+    );
+    const monthSnap = await getCountFromServer(monthQuery);
+    setMonthCount(monthSnap.data().count);
+    // Today
+    const startOfDay = now.startOf('day').toDate();
+    const endOfDay = now.endOf('day').toDate();
+    const todayQuery = query(
+      collection(db, 'logs'),
+      where('timestamp', '>=', startOfDay),
+      where('timestamp', '<=', endOfDay)
+    );
+    const todaySnap = await getCountFromServer(todayQuery);
+    setTodayCount(todaySnap.data().count);
+    // Week
+    const startOfWeek = now.startOf('week').toDate();
+    const endOfWeek = now.endOf('week').toDate();
+    const weekQuery = query(
+      collection(db, 'logs'),
+      where('timestamp', '>=', startOfWeek),
+      where('timestamp', '<=', endOfWeek)
+    );
+    const weekSnap = await getCountFromServer(weekQuery);
+    setWeekCount(weekSnap.data().count);
+  };
+
+  const fetchAttendanceLogs = async (reset = true) => {
+    setLoading(true);
     try {
-      const logsQuery = query(
-        collection(db, 'logs'),
-        orderBy('timestamp', 'desc'),
-        limit(100)
-      );
-      const logsSnapshot = await getDocs(logsQuery);
-      
+      let q;
+      const now = dayjs();
+      if (filter === 'month') {
+        const startOfMonth = now.startOf('month').toDate();
+        const endOfMonth = now.endOf('month').toDate();
+        q = query(
+          collection(db, 'logs'),
+          where('timestamp', '>=', startOfMonth),
+          where('timestamp', '<=', endOfMonth),
+          orderBy('timestamp', 'desc'),
+          limit(10)
+        );
+        if (!reset && lastVisible) {
+          q = query(
+            collection(db, 'logs'),
+            where('timestamp', '>=', startOfMonth),
+            where('timestamp', '<=', endOfMonth),
+            orderBy('timestamp', 'desc'),
+            startAfter(lastVisible),
+            limit(10)
+          );
+        }
+      } else if (filter === 'today') {
+        const startOfDay = now.startOf('day').toDate();
+        const endOfDay = now.endOf('day').toDate();
+        q = query(
+          collection(db, 'logs'),
+          where('timestamp', '>=', startOfDay),
+          where('timestamp', '<=', endOfDay),
+          orderBy('timestamp', 'desc'),
+          limit(10)
+        );
+        if (!reset && lastVisible) {
+          q = query(
+            collection(db, 'logs'),
+            where('timestamp', '>=', startOfDay),
+            where('timestamp', '<=', endOfDay),
+            orderBy('timestamp', 'desc'),
+            startAfter(lastVisible),
+            limit(10)
+          );
+        }
+      } else if (filter === 'week') {
+        const startOfWeek = now.startOf('week').toDate();
+        const endOfWeek = now.endOf('week').toDate();
+        q = query(
+          collection(db, 'logs'),
+          where('timestamp', '>=', startOfWeek),
+          where('timestamp', '<=', endOfWeek),
+          orderBy('timestamp', 'desc'),
+          limit(10)
+        );
+        if (!reset && lastVisible) {
+          q = query(
+            collection(db, 'logs'),
+            where('timestamp', '>=', startOfWeek),
+            where('timestamp', '<=', endOfWeek),
+            orderBy('timestamp', 'desc'),
+            startAfter(lastVisible),
+            limit(10)
+          );
+        }
+      } else {
+        // all
+        q = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(10));
+        if (!reset && lastVisible) {
+          q = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), startAfter(lastVisible), limit(10));
+        }
+      }
+      const logsSnapshot = await getDocs(q);
       const logsData = [];
       for (const logDoc of logsSnapshot.docs) {
         const logData = logDoc.data();
@@ -39,7 +147,6 @@ const Attendance = () => {
           where('__name__', '==', logData.memberId))
         );
         const memberData = memberDoc.docs[0]?.data();
-        
         logsData.push({
           id: logDoc.id,
           ...logData,
@@ -47,8 +154,13 @@ const Attendance = () => {
           memberEmail: memberData?.email || 'No Email'
         });
       }
-      
-      setLogs(logsData);
+      if (reset) {
+        setLogs(logsData);
+      } else {
+        setLogs(prev => [...prev, ...logsData]);
+      }
+      setLastVisible(logsSnapshot.docs[logsSnapshot.docs.length - 1]);
+      setHasMore(logsSnapshot.docs.length === 10);
     } catch (error) {
       console.error('Error fetching attendance logs:', error);
     } finally {
@@ -198,6 +310,10 @@ const Attendance = () => {
     return <div id="qr-reader" style={{ width: '100%', maxWidth: 400, margin: '0 auto' }} />;
   };
 
+  const handleShowMore = () => {
+    fetchAttendanceLogs(false);
+  };
+
   if (loading) {
     return <div className="loading">Loading attendance logs...</div>;
   }
@@ -307,7 +423,7 @@ const Attendance = () => {
               style={{ cursor: 'pointer' }}
             >
               <h3>Today</h3>
-              <div className="overview-value">{stats.today}</div>
+              <div className="overview-value">{todayCount}</div>
               <div className="overview-label">Check-ins today</div>
             </div>
             <div
@@ -316,7 +432,7 @@ const Attendance = () => {
               style={{ cursor: 'pointer' }}
             >
               <h3>This Week</h3>
-              <div className="overview-value">{stats.week}</div>
+              <div className="overview-value">{weekCount}</div>
               <div className="overview-label">Check-ins this week</div>
             </div>
             <div
@@ -325,7 +441,7 @@ const Attendance = () => {
               style={{ cursor: 'pointer' }}
             >
               <h3>This Month</h3>
-              <div className="overview-value">{stats.month}</div>
+              <div className="overview-value">{monthCount}</div>
               <div className="overview-label">Check-ins this month</div>
             </div>
             <div
@@ -334,13 +450,13 @@ const Attendance = () => {
               style={{ cursor: 'pointer' }}
             >
               <h3>All Time</h3>
-              <div className="overview-value">{stats.total}</div>
+              <div className="overview-value">{totalCount}</div>
               <div className="overview-label">Total check-ins</div>
             </div>
           </div>
 
           <div className="attendance-section">
-            <h2>Attendance Records ({filteredLogs.length})</h2>
+            <h2>Attendance Records ({filter === 'month' ? monthCount : filter === 'all' ? totalCount : logs.length})</h2>
             <div className="table-wrapper">
               <table className="attendance-table">
                 <thead>
@@ -353,7 +469,7 @@ const Attendance = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredLogs.map(log => (
+                  {logs.map(log => (
                     <tr key={log.id}>
                       <td>
                         <span className="member-id">{log.memberId}</span>
@@ -384,8 +500,12 @@ const Attendance = () => {
                 </tbody>
               </table>
             </div>
-
-            {filteredLogs.length === 0 && (
+            {hasMore && !loading && (
+              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <button className="btn btn-primary" onClick={handleShowMore}>Show More</button>
+              </div>
+            )}
+            {logs.length === 0 && !loading && (
               <div className="no-records">
                 <p>No attendance records found for the selected filter.</p>
               </div>
