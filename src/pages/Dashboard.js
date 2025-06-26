@@ -89,89 +89,90 @@ const Dashboard = () => {
   const bannedPct = totalMembers ? Math.round((bannedMembers / totalMembers) * 100) : 0;
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
+    <>
+      <div className="main-header">
         <h1>Dashboard</h1>
         <p>Welcome to your gym management dashboard</p>
       </div>
+      <div className="main-inner">
+        <div className="card stats-grid">
+          <StatCard
+            title="Total Members"
+            value={stats.totalMembers}
+            icon="�"
+            color="#0d6efd"
+          />
+          <StatCard
+            title="Active Members"
+            value={stats.activeMembers}
+            icon="✅"
+            color="#198754"
+          />
+          <StatCard
+            title="Today's Attendance"
+            value={stats.todayAttendance}
+            icon="📊"
+            color="#ffc107"
+          />
+          <StatCard
+            title="Monthly Revenue"
+            value={`$${stats.monthlyRevenue}`}
+            icon="💰"
+            color="#dc3545"
+          />
+          <StatCard
+            title="Pending Payments"
+            value={stats.pendingPayments}
+            icon="⏳"
+            color="#6f42c1"
+          />
+        </div>
 
-      <div className="stats-grid">
-        <StatCard
-          title="Total Members"
-          value={stats.totalMembers}
-          icon="👥"
-          color="#0d6efd"
-        />
-        <StatCard
-          title="Active Members"
-          value={stats.activeMembers}
-          icon="✅"
-          color="#198754"
-        />
-        <StatCard
-          title="Today's Attendance"
-          value={stats.todayAttendance}
-          icon="📊"
-          color="#ffc107"
-        />
-        <StatCard
-          title="Monthly Revenue"
-          value={`$${stats.monthlyRevenue}`}
-          icon="💰"
-          color="#dc3545"
-        />
-        <StatCard
-          title="Pending Payments"
-          value={stats.pendingPayments}
-          icon="⏳"
-          color="#6f42c1"
-        />
-      </div>
-
-      <div className="charts-section">
-        <div className="chart-card">
-          <h3>Attendance Trend (Last 7 Days)</h3>
-          <div className="chart-placeholder real-bar-chart">
-            {attendanceTrend.map((d, i) => {
-              let barHeight;
-              if (d.count === 0) {
-                barHeight = '8px';
-              } else {
-                const maxBarHeight = 180; // px, leave some space for labels
-                const heightPx = Math.max((d.count / maxAttendance) * maxBarHeight, 18); // at least 18px
-                barHeight = `${heightPx}px`;
-              }
-              return (
-                <div key={d.date} className="chart-bar-wrapper">
-                  <div
-                    className="chart-bar-real"
-                    style={{ height: barHeight }}
-                    title={`${d.count} check-ins`}
-                  >
-                    {d.count > 0 && <span className="bar-label">{d.count}</span>}
+        <div className="card charts-section">
+          <div className="chart-card">
+            <h3>Attendance Trend (Last 7 Days)</h3>
+            <div className="chart-placeholder real-bar-chart">
+              {attendanceTrend.map((d, i) => {
+                let barHeight;
+                if (d.count === 0) {
+                  barHeight = '8px';
+                } else {
+                  const maxBarHeight = 180; // px, leave some space for labels
+                  const heightPx = Math.max((d.count / maxAttendance) * maxBarHeight, 18); // at least 18px
+                  barHeight = `${heightPx}px`;
+                }
+                return (
+                  <div key={d.date} className="chart-bar-wrapper">
+                    <div
+                      className="chart-bar-real"
+                      style={{ height: barHeight }}
+                      title={`${d.count} check-ins`}
+                    >
+                      {d.count > 0 && <span className="bar-label">{d.count}</span>}
+                    </div>
+                    <span className="chart-bar-day">{weekDays[i]}</span>
                   </div>
-                  <span className="chart-bar-day">{weekDays[i]}</span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        <div className="chart-card">
-          <h3>Member Status Distribution</h3>
-          <div className="member-status-bar">
-            <div className="status-segment active" style={{ width: `${activePct}%` }} title={`Active: ${activeMembers}`}>{activeMembers > 0 && <span>{activeMembers}</span>}</div>
-            <div className="status-segment stopped" style={{ width: `${stoppedPct}%` }} title={`Stopped: ${stoppedMembers}`}>{stoppedMembers > 0 && <span>{stoppedMembers}</span>}</div>
-            <div className="status-segment banned" style={{ width: `${bannedPct}%` }} title={`Banned: ${bannedMembers}`}>{bannedMembers > 0 && <span>{bannedMembers}</span>}</div>
-          </div>
-          <div className="status-labels">
-            <span className="active">Active ({activePct}%)</span>
-            <span className="stopped">Stopped ({stoppedPct}%)</span>
-            <span className="banned">Banned ({bannedPct}%)</span>
+          <div className="chart-card">
+            <h3>Member Status Distribution</h3>
+            <div className="member-status-bar">
+              <div className="status-segment active" style={{ width: `${activePct}%` }} title={`Active: ${activeMembers}`}>{activeMembers > 0 && <span>{activeMembers}</span>}</div>
+              <div className="status-segment stopped" style={{ width: `${stoppedPct}%` }} title={`Stopped: ${stoppedMembers}`}>{stoppedMembers > 0 && <span>{stoppedMembers}</span>}</div>
+              <div className="status-segment banned" style={{ width: `${bannedPct}%` }} title={`Banned: ${bannedMembers}`}>{bannedMembers > 0 && <span>{bannedMembers}</span>}</div>
+            </div>
+            <div className="status-labels">
+              <span className="active">Active ({activePct}%)</span>
+              <span className="stopped">Stopped ({stoppedPct}%)</span>
+              <span className="banned">Banned ({bannedPct}%)</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

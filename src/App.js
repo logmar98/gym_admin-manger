@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebase';
-import Navbar from './components/Navbar';
+import SidebarLayout from './components/SidebarLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Members from './pages/Members';
@@ -38,28 +38,25 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
+    <div className="App">
         {user ? (
-          <>
-            <Navbar />
-            <main className="main-content">
-              <Routes>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/members" element={<Members />} />
-                <Route path="/member/:memberId" element={<MemberProfile />} />
-                <Route path="/payments" element={<Payments />} />
-                <Route path="/attendance" element={<Attendance />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </main>
-          </>
+          <SidebarLayout>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/members" element={<Members />} />
+              <Route path="/member/:memberId" element={<MemberProfile />} />
+              <Route path="/payments" element={<Payments />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </SidebarLayout>
         ) : (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         )}
-      </div>
+    </div>
     </Router>
   );
 }

@@ -9,6 +9,28 @@ const MemberTable = ({ members, onEditMember, onViewProfile, refreshMembers, sor
   const [showQR, setShowQR] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Sort icon component
+  const SortIcon = ({ columnName }) => {
+    if (sortField === columnName) {
+      return sortOrder === 'asc' ? (
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      ) : (
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      );
+    }
+    // Unsorted: generic sort icon (⇅)
+    return (
+      <svg width="16" height="16" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+        <polyline points="8 9 12 5 16 9"/>
+        <polyline points="16 15 12 19 8 15"/>
+      </svg>
+    );
+  };
+
   const handleStatusChange = async (memberId, newStatus) => {
     try {
       await updateDoc(doc(db, 'members', memberId), {
@@ -111,13 +133,15 @@ const MemberTable = ({ members, onEditMember, onViewProfile, refreshMembers, sor
           <thead>
             <tr>
               <th style={{ cursor: 'pointer' }} onClick={() => onSortField('name')}>
-                Name {sortField === 'name' && (sortOrder === 'asc' ? '▲' : '▼')}
+                <span className="sortable-header"><SortIcon columnName="name" /> Name</span>
               </th>
               <th>Email</th>
               <th>Phone</th>
-              <th>Status</th>
+              <th style={{ cursor: 'pointer' }} onClick={() => onSortField('status')}>
+                <span className="sortable-header"><SortIcon columnName="status" /> Status</span>
+              </th>
               <th style={{ cursor: 'pointer' }} onClick={() => onSortField('joinDate')}>
-                Join Date {sortField === 'joinDate' && (sortOrder === 'asc' ? '▲' : '▼')}
+                <span className="sortable-header"><SortIcon columnName="joinDate" /> Join Date</span>
               </th>
               <th>Payment Status</th>
               <th>Actions</th>
@@ -199,10 +223,13 @@ const MemberTable = ({ members, onEditMember, onViewProfile, refreshMembers, sor
 
       {showQR && (
         <div className="qr-modal">
-          <div className="qr-content" id="qr-print-area">
-            <h3>QR Code for {members.find(m => m.id === showQR)?.name}</h3>
-            <QRCodeSVG value={showQR} size={200} />
-            <p>Member ID: {showQR}</p>
+          <div className="qr-card" id="qr-print-area">
+            <h3 className="qr-member-name">{members.find(m => m.id === showQR)?.name}</h3>
+            <div className="qr-divider" />
+            <div className="qr-code-area">
+              <QRCodeSVG value={showQR} size={200} />
+            </div>
+            <div className="qr-member-id">Member ID: <span>{showQR}</span></div>
             <div className="qr-modal-actions">
               <button onClick={() => window.printQR('qr-print-area')} className="print-btn">
                 Print QR

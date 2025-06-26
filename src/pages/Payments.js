@@ -7,6 +7,8 @@ import './Payments.css';
 const Payments = () => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortField, setSortField] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
     fetchMembers();
@@ -117,6 +119,77 @@ const Payments = () => {
     });
   };
 
+  // Members who should pay today and haven't paid yet
+  const today = dayjs().format('YYYY-MM-DD');
+  const dueTodayMembers = members.filter(member => {
+    if (member.status !== 'active') return false;
+    // Never paid: no lastPaymentDate and no nextPaymentDate
+    if (!member.lastPaymentDate && !member.nextPaymentDate) return true;
+    // Due today and not paid today
+    if (member.nextPaymentDate) {
+      const dueDate = dayjs(member.nextPaymentDate).format('YYYY-MM-DD');
+      const lastPaid = member.lastPaymentDate ? dayjs(member.lastPaymentDate).format('YYYY-MM-DD') : null;
+      return dueDate === today && lastPaid !== today;
+    }
+    return false;
+  });
+
+  // Sort icon component
+  const SortIcon = ({ columnName }) => {
+    if (sortField === columnName) {
+      return sortOrder === 'asc' ? (
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      ) : (
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      );
+    }
+    // Unsorted: generic sort icon (⇅)
+    return (
+      <svg width="16" height="16" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+        <polyline points="8 9 12 5 16 9"/>
+        <polyline points="16 15 12 19 8 15"/>
+      </svg>
+    );
+  };
+
+  // Sort and filter members for Payment Status table
+  const activeMembers = members.filter(member => member.status === 'active');
+  const sortedMembers = [...activeMembers].sort((a, b) => {
+    if (sortField === 'name') {
+      if (sortOrder === 'asc') return a.name.localeCompare(b.name);
+      else return b.name.localeCompare(a.name);
+    } else if (sortField === 'status') {
+      // Custom order: current < warning < late < overdue
+      const getStatusOrder = (member) => {
+        const paymentStatus = getPaymentStatus(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate).status;
+        const order = { current: 1, warning: 2, late: 3, overdue: 4 };
+        return order[paymentStatus] || 5;
+      };
+      if (sortOrder === 'asc') return getStatusOrder(a) - getStatusOrder(b);
+      else return getStatusOrder(b) - getStatusOrder(a);
+    } else if (sortField === 'lastPayment') {
+      const aDate = a.lastPaymentDate ? new Date(a.lastPaymentDate) : new Date(0);
+      const bDate = b.lastPaymentDate ? new Date(b.lastPaymentDate) : new Date(0);
+      if (sortOrder === 'asc') return aDate - bDate;
+      else return bDate - aDate;
+    }
+    return 0;
+  });
+
+  // Toggle sort order or change field
+  const handleSortField = (field) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading payments...</div>;
   }
@@ -125,113 +198,170 @@ const Payments = () => {
   const overduePayments = getOverduePayments();
 
   return (
-    <div className="payments-page">
-      <div className="page-header">
+    <>
+      <div className="main-header">
         <h1>Payments Management</h1>
-        <div className="header-actions">
-          <button onClick={exportPaymentsCSV} className="export-btn">
-            📊 Export CSV
-          </button>
-        </div>
       </div>
+      <div className="main-inner">
+        <div className="card">
+          <div className="page-header">
+            <h1>Payments Management</h1>
+            <div className="header-actions">
+              <button onClick={exportPaymentsCSV} className="export-btn">
+                📊 Export CSV
+              </button>
+            </div>
+          </div>
 
-      <div className="payments-overview">
-        <div className="overview-card">
-          <h3>Today's Payments</h3>
-          <div className="overview-value">{todaysPayments.length}</div>
-          <div className="overview-label">Members paid today</div>
-        </div>
-        <div className="overview-card">
-          <h3>Overdue Payments</h3>
-          <div className="overview-value overdue">{overduePayments.length}</div>
-          <div className="overview-label">Members need attention</div>
-        </div>
-        <div className="overview-card">
-          <h3>Total Members</h3>
-          <div className="overview-value">{members.length}</div>
-          <div className="overview-label">Active members</div>
-        </div>
-      </div>
+          <div className="payments-overview">
+            <div className="overview-card">
+              <h3>Today's Payments</h3>
+              <div className="overview-value">{todaysPayments.length}</div>
+              <div className="overview-label">Members paid today</div>
+            </div>
+            <div className="overview-card">
+              <h3>Overdue Payments</h3>
+              <div className="overview-value overdue">{overduePayments.length}</div>
+              <div className="overview-label">Members need attention</div>
+            </div>
+            <div className="overview-card">
+              <h3>Total Members</h3>
+              <div className="overview-value">{members.length}</div>
+              <div className="overview-label">Active members</div>
+            </div>
+          </div>
 
-      <div className="payments-section">
-        <h2>Payment Status</h2>
-        <div className="table-wrapper">
-          <table className="payments-table">
-            <thead>
-              <tr>
-                <th>Member Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Last Payment</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map(member => {
-                const paymentStatus = getPaymentStatus(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate);
-                return (
-                  <tr key={member.id}>
-                    <td>{member.name}</td>
-                    <td>{member.email}</td>
-                    <td>{member.phone}</td>
-                    <td>
-                      {member.lastPaymentDate ? 
-                        dayjs(member.lastPaymentDate).format('MMM DD, YYYY') : 
-                        'No Payment'
-                      }
-                    </td>
-                    <td>
-                      <span 
-                        className="payment-status-badge"
-                        style={{ backgroundColor: paymentStatus.color }}
-                      >
-                        {paymentStatus.status.toUpperCase()}
-                      </span>
-                      <div className="payment-days">{paymentStatus.days}</div>
-                    </td>
-                    <td>
-                      <button 
-                        onClick={() => handlePaymentReceived(member.id)}
-                        className="mark-paid-btn"
-                        disabled={paymentStatus.status === 'current'}
-                      >
-                        {paymentStatus.status === 'current' ? '✓ Paid' : 'Mark as Paid'}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="payments-section">
-        <h2>Today's Payments ({todaysPayments.length})</h2>
-        {todaysPayments.length > 0 ? (
-          <div className="todays-payments">
-            {todaysPayments.map(member => (
-              <div key={member.id} className="payment-card">
-                <div className="payment-info">
-                  <h4>{member.name}</h4>
-                  <p>{member.email}</p>
-                  <p>{member.phone}</p>
-                </div>
-                <div className="payment-time">
-                  <span>Paid Today</span>
-                  <small>{dayjs(member.lastPaymentDate).format('HH:mm')}</small>
-                </div>
+          {/* Due Today Section */}
+          {dueTodayMembers.length > 0 && (
+            <div className="payments-section">
+              <h2>Due Today (Unpaid)</h2>
+              <div className="table-wrapper">
+                <table className="payments-table">
+                  <thead>
+                    <tr>
+                      <th>Member Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Last Payment</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dueTodayMembers.map(member => (
+                      <tr key={member.id}>
+                        <td>{member.name}</td>
+                        <td>{member.email}</td>
+                        <td>{member.phone}</td>
+                        <td>
+                          {member.lastPaymentDate ? 
+                            dayjs(member.lastPaymentDate).format('MMM DD, YYYY') : 
+                            'No Payment'
+                          }
+                        </td>
+                        <td>
+                          <button 
+                            onClick={() => handlePaymentReceived(member.id)}
+                            className="mark-paid-btn"
+                          >
+                            Mark as Paid
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            ))}
+            </div>
+          )}
+
+          <div className="payments-section">
+            <h2>Today's Payments ({todaysPayments.length})</h2>
+            {todaysPayments.length > 0 ? (
+              <div className="todays-payments">
+                {todaysPayments.map(member => (
+                  <div key={member.id} className="payment-card">
+                    <div className="payment-info">
+                      <h4>{member.name}</h4>
+                      <p>{member.email}</p>
+                      <p>{member.phone}</p>
+                    </div>
+                    <div className="payment-time">
+                      <span>Paid Today</span>
+                      <small>{dayjs(member.lastPaymentDate).format('HH:mm')}</small>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-payments">
+                <p>No payments received today</p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="no-payments">
-            <p>No payments received today</p>
+
+          <div className="payments-section">
+            <h2>Payment Status</h2>
+            <div className="table-wrapper">
+              <table className="payments-table">
+                <thead>
+                  <tr>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSortField('name')}>
+                      <span className="sortable-header"><SortIcon columnName="name" /> Member Name</span>
+                    </th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSortField('lastPayment')}>
+                      <span className="sortable-header"><SortIcon columnName="lastPayment" /> Last Payment</span>
+                    </th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSortField('status')}>
+                      <span className="sortable-header"><SortIcon columnName="status" /> Status</span>
+                    </th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedMembers.map(member => {
+                    const paymentStatus = getPaymentStatus(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate);
+                    return (
+                      <tr key={member.id}>
+                        <td>{member.name}</td>
+                        <td>{member.email}</td>
+                        <td>{member.phone}</td>
+                        <td>
+                          {member.lastPaymentDate ? 
+                            dayjs(member.lastPaymentDate).format('MMM DD, YYYY') : 
+                            'No Payment'
+                          }
+                        </td>
+                        <td>
+                          <span 
+                            className="payment-status-badge"
+                            style={{ backgroundColor: paymentStatus.color }}
+                          >
+                            {paymentStatus.status.toUpperCase()}
+                          </span>
+                          <div className="payment-days">{paymentStatus.days}</div>
+                        </td>
+                        <td>
+                          <button 
+                            onClick={() => handlePaymentReceived(member.id)}
+                            className="mark-paid-btn"
+                          >
+                            Mark as Paid
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
+
+
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

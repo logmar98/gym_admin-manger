@@ -87,91 +87,98 @@ const MemberProfile = () => {
 
   return (
     <div className="member-profile">
-      <div className="profile-header">
-        <button onClick={() => navigate('/members')} className="back-btn">
-          ← Back to Members
-        </button>
-        <h1>{member.name}</h1>
-        <div className="header-actions">
-          <button onClick={() => setShowQR(true)} className="qr-btn">
-            📱 Show QR Code
-          </button>
-        </div>
+      <div className="main-header">
+        <h1>Member Profile</h1>
       </div>
-
-      <div className="profile-content">
-        <div className="profile-section">
-          <h2>Member Information</h2>
-          <div className="info-grid">
-            <div className="info-item">
-              <label>Full Name</label>
-              <span>{member.name}</span>
-            </div>
-            <div className="info-item">
-              <label>Email</label>
-              <span>{member.email}</span>
-            </div>
-            <div className="info-item">
-              <label>Phone</label>
-              <span>{member.phone}</span>
-            </div>
-            <div className="info-item">
-              <label>Status</label>
-              <span>{getStatusBadge(member.status)}</span>
-            </div>
-            <div className="info-item">
-              <label>Join Date</label>
-              <span>{dayjs(member.joinDate).format('MMMM DD, YYYY')}</span>
-            </div>
-            <div className="info-item">
-              <label>Last Payment</label>
-              <span 
-                className="payment-status"
-                style={{ backgroundColor: getPaymentStatusColor(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate) }}
-              >
-                {member.lastPaymentDate ? 
-                  dayjs(member.lastPaymentDate).format('MMM DD, YYYY') : 
-                  'No Payment Record'
-                }
-              </span>
+      <div className="main-inner">
+        <div className="card">
+          <div className="profile-header">
+            <button onClick={() => navigate('/members')} className="back-btn">
+              ← Back to Members
+            </button>
+            <h1>{member.name}</h1>
+            <div className="header-actions">
+              <button onClick={() => setShowQR(true)} className="qr-btn">
+                📱 Show QR Code
+              </button>
             </div>
           </div>
-        </div>
 
-        <div className="profile-section">
-          <h2>Attendance Statistics</h2>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-value">{attendanceData.length}</div>
-              <div className="stat-label">Total Visits</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">
-                {attendanceData.filter(date => 
-                  dayjs(date).isSame(dayjs(), 'month')
-                ).length}
+          <div className="profile-content">
+            <div className="profile-section">
+              <h2>Member Information</h2>
+              <div className="info-grid">
+                <div className="info-item">
+                  <label>Full Name</label>
+                  <span>{member.name}</span>
+                </div>
+                <div className="info-item">
+                  <label>Email</label>
+                  <span>{member.email}</span>
+                </div>
+                <div className="info-item">
+                  <label>Phone</label>
+                  <span>{member.phone}</span>
+                </div>
+                <div className="info-item">
+                  <label>Status</label>
+                  <span>{getStatusBadge(member.status)}</span>
+                </div>
+                <div className="info-item">
+                  <label>Join Date</label>
+                  <span>{dayjs(member.joinDate).format('MMMM DD, YYYY')}</span>
+                </div>
+                <div className="info-item">
+                  <label>Last Payment</label>
+                  <span 
+                    className="payment-status"
+                    style={{ backgroundColor: getPaymentStatusColor(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate) }}
+                  >
+                    {member.lastPaymentDate ? 
+                      dayjs(member.lastPaymentDate).format('MMM DD, YYYY') : 
+                      'No Payment Record'
+                    }
+                  </span>
+                </div>
               </div>
-              <div className="stat-label">This Month</div>
             </div>
-            <div className="stat-card">
-              <div className="stat-value">
-                {attendanceData.filter(date => 
-                  dayjs(date).isSame(dayjs(), 'week')
-                ).length}
+
+            <div className="profile-section">
+              <h2>Attendance Statistics</h2>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-value">{attendanceData.length}</div>
+                  <div className="stat-label">Total Visits</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {attendanceData.filter(date => 
+                      dayjs(date).isSame(dayjs(), 'month')
+                    ).length}
+                  </div>
+                  <div className="stat-label">This Month</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {attendanceData.filter(date => 
+                      dayjs(date).isSame(dayjs(), 'week')
+                    ).length}
+                  </div>
+                  <div className="stat-label">This Week</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {attendanceData.includes(dayjs().format('YYYY-MM-DD')) ? 'Yes' : 'No'}
+                  </div>
+                  <div className="stat-label">Today</div>
+                </div>
               </div>
-              <div className="stat-label">This Week</div>
             </div>
-            <div className="stat-card">
-              <div className="stat-value">
-                {attendanceData.includes(dayjs().format('YYYY-MM-DD')) ? 'Yes' : 'No'}
-              </div>
-              <div className="stat-label">Today</div>
+
+            <div className="profile-section">
+              <CalendarHeatmap attendanceData={attendanceData} />
             </div>
           </div>
-        </div>
-
-        <div className="profile-section">
-          <CalendarHeatmap attendanceData={attendanceData} />
         </div>
       </div>
 

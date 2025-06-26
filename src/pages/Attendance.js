@@ -8,7 +8,7 @@ import { QrReader } from '@blackbox-vision/react-qr-reader';
 const Attendance = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, today, week, month
+  const [filter, setFilter] = useState('today'); // default to today
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrError, setQRError] = useState('');
   const [members, setMembers] = useState([]);
@@ -172,198 +172,187 @@ const Attendance = () => {
   const stats = getAttendanceStats();
 
   return (
-    <div className="attendance-page">
-      <div className="page-header">
+    <>
+      <div className="main-header">
         <h1>Attendance Log</h1>
-        <div className="header-actions">
-          <button onClick={() => setShowQRModal(true)} className="export-btn">Scan QR</button>
-          <select 
-            value={filter} 
-            onChange={(e) => setFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-          </select>
-          <button onClick={exportAttendanceCSV} className="export-btn">
-            📊 Export CSV
-          </button>
-        </div>
       </div>
-
-      {/* Manual Add Attendance by Name */}
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', maxWidth: 400 }}>
-        <input
-          type="text"
-          placeholder="Search member by name or email"
-          value={selectedMember ? selectedMember.name + ' (' + selectedMember.email + ')' : searchTerm}
-          onChange={e => {
-            setSearchTerm(e.target.value);
-            setSelectedMember(null);
-            setShowSearchDropdown(true);
-          }}
-          onFocus={() => setShowSearchDropdown(true)}
-          style={{ padding: '0.5rem', minWidth: 200 }}
-          autoComplete="off"
-        />
-        {showSearchDropdown && !selectedMember && searchTerm && (
-          <div style={{
-            position: 'absolute',
-            top: '2.5rem',
-            left: 0,
-            right: 0,
-            background: 'white',
-            border: '1px solid #dee2e6',
-            borderRadius: 4,
-            zIndex: 10,
-            maxHeight: 200,
-            overflowY: 'auto',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-          }}>
-            {members.filter(m =>
-              m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              m.email.toLowerCase().includes(searchTerm.toLowerCase())
-            ).slice(0, 10).map(m => (
-              <div
-                key={m.id}
-                style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f1f1' }}
-                onClick={() => {
-                  setSelectedMember(m);
-                  setShowSearchDropdown(false);
-                }}
-                onMouseDown={e => e.preventDefault()}
-              >
-                {m.name} <span style={{ color: '#6c757d', fontSize: '0.9em' }}>({m.email})</span>
-              </div>
-            ))}
-            {members.filter(m =>
-              m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              m.email.toLowerCase().includes(searchTerm.toLowerCase())
-            ).length === 0 && (
-              <div style={{ padding: '0.5rem 1rem', color: '#6c757d' }}>No results</div>
-            )}
-          </div>
-        )}
-        <button onClick={handleManualAttendance} className="export-btn" disabled={!selectedMember}>Add Attendance</button>
-      </div>
-
-      {/* QR Modal */}
-      {showQRModal && (
-        <div className="qr-modal">
-          <div className="qr-content">
-            <h3>Scan Member QR Code</h3>
-            <QrReader
-              constraints={{ facingMode: 'environment' }}
-              onResult={(result, error) => {
-                if (!!result) handleScan(result?.text);
-                if (!!error) handleError(error);
-              }}
-              style={{ width: '100%' }}
-            />
-            {qrError && <div style={{ color: 'red', marginTop: 8 }}>{qrError}</div>}
-            <button onClick={() => setShowQRModal(false)} className="close-btn" style={{ marginTop: 16 }}>Close</button>
-          </div>
-        </div>
-      )}
-
-      <div className="attendance-overview">
-        <div className="overview-card">
-          <h3>Today's Attendance</h3>
-          <div className="overview-value">{stats.today}</div>
-          <div className="overview-label">Members checked in</div>
-        </div>
-        <div className="overview-card">
-          <h3>This Week</h3>
-          <div className="overview-value">{stats.week}</div>
-          <div className="overview-label">Total check-ins</div>
-        </div>
-        <div className="overview-card">
-          <h3>This Month</h3>
-          <div className="overview-value">{stats.month}</div>
-          <div className="overview-label">Total check-ins</div>
-        </div>
-        <div className="overview-card">
-          <h3>All Time</h3>
-          <div className="overview-value">{stats.total}</div>
-          <div className="overview-label">Total records</div>
-        </div>
-      </div>
-
-      <div className="attendance-section">
-        <h2>Attendance Records ({filteredLogs.length})</h2>
-        <div className="table-wrapper">
-          <table className="attendance-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Member Name</th>
-                <th>Email</th>
-                <th>Member ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLogs.map(log => (
-                <tr key={log.id}>
-                  <td>
-                    <div className="date-info">
-                      <span className="date">
-                        {dayjs(log.timestamp?.toDate()).format('MMM DD, YYYY')}
-                      </span>
-                      <span className="day">
-                        {dayjs(log.timestamp?.toDate()).format('dddd')}
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="time">
-                      {dayjs(log.timestamp?.toDate()).format('HH:mm:ss')}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="member-info">
-                      <span className="member-name">{log.memberName}</span>
-                    </div>
-                  </td>
-                  <td>{log.memberEmail}</td>
-                  <td>
-                    <span className="member-id">{log.memberId}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredLogs.length === 0 && (
-          <div className="no-records">
-            <p>No attendance records found for the selected filter.</p>
-          </div>
-        )}
-      </div>
-
-      <div className="attendance-section">
-        <h2>Recent Activity</h2>
-        <div className="activity-timeline">
-          {logs.slice(0, 10).map(log => (
-            <div key={log.id} className="activity-item">
-              <div className="activity-time">
-                {dayjs(log.timestamp?.toDate()).format('HH:mm')}
-              </div>
-              <div className="activity-content">
-                <div className="activity-member">{log.memberName}</div>
-                <div className="activity-date">
-                  {dayjs(log.timestamp?.toDate()).format('MMM DD, YYYY')}
+      <div className="main-inner">
+        <div className="card">
+          <div className="page-header">
+            <div className="header-actions">
+              <div className="attendance-header-left">
+                <div className="attendance-actions-group">
+                  <div className="attendance-search-box">
+                    <input
+                      type="text"
+                      placeholder="Search member by name or email"
+                      value={selectedMember ? selectedMember.name + ' (' + selectedMember.email + ')' : searchTerm}
+                      onChange={e => {
+                        setSearchTerm(e.target.value);
+                        setSelectedMember(null);
+                        setShowSearchDropdown(true);
+                      }}
+                      onFocus={() => setShowSearchDropdown(true)}
+                      className="attendance-search-input"
+                      autoComplete="off"
+                    />
+                    {showSearchDropdown && !selectedMember && searchTerm && (
+                      <div className="attendance-search-dropdown">
+                        {members.filter(m =>
+                          m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          m.email.toLowerCase().includes(searchTerm.toLowerCase())
+                        ).slice(0, 10).map(m => (
+                          <div
+                            key={m.id}
+                            className="attendance-search-result"
+                            onClick={() => {
+                              setSelectedMember(m);
+                              setShowSearchDropdown(false);
+                            }}
+                            onMouseDown={e => e.preventDefault()}
+                          >
+                            {m.name} <span className="attendance-search-email">({m.email})</span>
+                          </div>
+                        ))}
+                        {members.filter(m =>
+                          m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          m.email.toLowerCase().includes(searchTerm.toLowerCase())
+                        ).length === 0 && (
+                          <div className="attendance-search-no-results">No results</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleManualAttendance}
+                    className="add-attendance-btn"
+                    disabled={!selectedMember}
+                  >
+                    Add Attendance
+                  </button>
+                  <button onClick={() => setShowQRModal(true)} className="export-btn">Scan QR</button>
                 </div>
               </div>
-              <div className="activity-icon">✅</div>
+              <button onClick={exportAttendanceCSV} className="export-btn export-btn-right">
+                📊 Export CSV
+              </button>
             </div>
-          ))}
+          </div>
+
+          {/* QR Modal */}
+          {showQRModal && (
+            <div className="qr-modal">
+              <div className="qr-content">
+                <h3>Scan Member QR Code</h3>
+                <QrReader
+                  constraints={{ facingMode: 'environment' }}
+                  onResult={(result, error) => {
+                    if (!!result) handleScan(result?.text);
+                    if (!!error) handleError(error);
+                  }}
+                  style={{ width: '100%' }}
+                />
+                {qrError && <div style={{ color: 'red', marginTop: 8 }}>{qrError}</div>}
+                <button onClick={() => setShowQRModal(false)} className="close-btn" style={{ marginTop: 16 }}>Close</button>
+              </div>
+            </div>
+          )}
+
+          {/* Overview Cards as Filters */}
+          <div className="attendance-overview">
+            <div
+              className={`overview-card${filter === 'today' ? ' active' : ''}`}
+              onClick={() => setFilter('today')}
+              style={{ cursor: 'pointer' }}
+            >
+              <h3>Today</h3>
+              <div className="overview-value">{stats.today}</div>
+              <div className="overview-label">Check-ins today</div>
+            </div>
+            <div
+              className={`overview-card${filter === 'week' ? ' active' : ''}`}
+              onClick={() => setFilter('week')}
+              style={{ cursor: 'pointer' }}
+            >
+              <h3>This Week</h3>
+              <div className="overview-value">{stats.week}</div>
+              <div className="overview-label">Check-ins this week</div>
+            </div>
+            <div
+              className={`overview-card${filter === 'month' ? ' active' : ''}`}
+              onClick={() => setFilter('month')}
+              style={{ cursor: 'pointer' }}
+            >
+              <h3>This Month</h3>
+              <div className="overview-value">{stats.month}</div>
+              <div className="overview-label">Check-ins this month</div>
+            </div>
+            <div
+              className={`overview-card${filter === 'all' ? ' active' : ''}`}
+              onClick={() => setFilter('all')}
+              style={{ cursor: 'pointer' }}
+            >
+              <h3>All Time</h3>
+              <div className="overview-value">{stats.total}</div>
+              <div className="overview-label">Total check-ins</div>
+            </div>
+          </div>
+
+          <div className="attendance-section">
+            <h2>Attendance Records ({filteredLogs.length})</h2>
+            <div className="table-wrapper">
+              <table className="attendance-table">
+                <thead>
+                  <tr>
+                    <th>Member ID</th>
+                    <th>Member Name</th>
+                    <th>Email</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLogs.map(log => (
+                    <tr key={log.id}>
+                      <td>
+                        <span className="member-id">{log.memberId}</span>
+                      </td>
+                      <td>
+                        <div className="member-info">
+                          <span className="member-name">{log.memberName}</span>
+                        </div>
+                      </td>
+                      <td>{log.memberEmail}</td>
+                      <td>
+                        <div className="date-info">
+                          <span className="date">
+                            {dayjs(log.timestamp?.toDate()).format('MMM DD, YYYY')}
+                          </span>
+                          <span className="day">
+                            {dayjs(log.timestamp?.toDate()).format('dddd')}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="time">
+                          {dayjs(log.timestamp?.toDate()).format('HH:mm:ss')}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredLogs.length === 0 && (
+              <div className="no-records">
+                <p>No attendance records found for the selected filter.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
