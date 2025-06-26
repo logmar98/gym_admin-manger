@@ -3,7 +3,7 @@ import { collection, getDocs, query, orderBy, limit, where, addDoc } from 'fireb
 import { db } from '../firebase';
 import dayjs from 'dayjs';
 import './Attendance.css';
-import { QrReader } from '@blackbox-vision/react-qr-reader';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 const Attendance = () => {
   const [logs, setLogs] = useState([]);
@@ -171,6 +171,22 @@ const Attendance = () => {
     setShowSearchDropdown(false);
   };
 
+  // Helper component for QR modal using html5-qrcode
+  const Html5QrcodePlugin = ({ onScanSuccess, onScanError }) => {
+    React.useEffect(() => {
+      const scanner = new Html5QrcodeScanner(
+        'qr-reader',
+        { fps: 10, qrbox: 250 },
+        false
+      );
+      scanner.render(onScanSuccess, onScanError);
+      return () => {
+        scanner.clear().catch(() => {});
+      };
+    }, [onScanSuccess, onScanError]);
+    return <div id="qr-reader" style={{ width: '100%', maxWidth: 400, margin: '0 auto' }} />;
+  };
+
   if (loading) {
     return <div className="loading">Loading attendance logs...</div>;
   }
@@ -251,13 +267,15 @@ const Attendance = () => {
             <div className="qr-modal">
               <div className="qr-content">
                 <h3>Scan Member QR Code</h3>
-                <QrReader
-                  constraints={{ facingMode: 'environment' }}
-                  onResult={(result, error) => {
-                    if (!!result) handleScan(result?.text);
-                    if (!!error) handleError(error);
+                <Html5QrcodePlugin
+                  onScanSuccess={(decodedText) => {
+                    if (decodedText) {
+                      setShowQRModal(false);
+                      setQRError('');
+                      handleScan(decodedText);
+                    }
                   }}
-                  style={{ width: '100%' }}
+                  onScanError={handleError}
                 />
                 {qrError && <div style={{ color: 'red', marginTop: 8 }}>{qrError}</div>}
                 <button onClick={() => setShowQRModal(false)} className="close-btn" style={{ marginTop: 16 }}>Close</button>

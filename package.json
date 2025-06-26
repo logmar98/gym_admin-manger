@@ -12,6 +12,7 @@
     "faker": "^6.6.6",
     "firebase": "^11.9.1",
     "firebase-admin": "^13.4.0",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.523.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
