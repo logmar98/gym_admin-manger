@@ -275,20 +275,27 @@ const Attendance = () => {
           {/* QR Modal */}
           {showQRModal && (
             <div className="qr-modal">
-              <div className="qr-content">
-                <h3>Scan Member QR Code</h3>
-                <Html5QrcodePlugin
-                  onScanSuccess={(decodedText) => {
-                    if (decodedText) {
-                      setShowQRModal(false);
-                      setQRError('');
-                      handleScan(decodedText);
-                    }
-                  }}
-                  onScanError={handleError}
-                />
-                {qrError && <div style={{ color: 'red', marginTop: 8 }}>{qrError}</div>}
-                <button onClick={() => setShowQRModal(false)} className="close-btn" style={{ marginTop: 16 }}>Close</button>
+              <div className="qr-card">
+                <h3 className="qr-scan-title">Scan Member QR Code</h3>
+                <div className="qr-divider" />
+                <div className="qr-scanner-area">
+                  <Html5QrcodePlugin
+                    onScanSuccess={(decodedText) => {
+                      if (decodedText) {
+                        setShowQRModal(false);
+                        setQRError('');
+                        handleScan(decodedText);
+                      }
+                    }}
+                    onScanError={handleError}
+                  />
+                </div>
+                {qrError && <div className="qr-error-msg">{qrError}</div>}
+                <div className="qr-modal-actions">
+                  <button onClick={() => setShowQRModal(false)} className="close-btn">
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           )}

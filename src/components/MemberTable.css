@@ -245,7 +245,7 @@
 }
 
 .qr-code-area {
-  background: var(--color-bg-inset, #f8f9fa);
+  background: white;
   border-radius: 12px;
   padding: 1.2rem;
   margin-bottom: 1.2rem;
