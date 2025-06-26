@@ -128,8 +128,8 @@
 
 .main-inner {
   flex: 1;
-  padding: var(--spacing-5);
-  max-width: 1200px;
+  padding: var(--spacing-3);
+  max-width: 900px;
   margin: 0 auto;
   width: 100%;
 }
@@ -151,6 +151,10 @@
   .sidebar-layout.collapsed .main-content {
     margin-left: 64px;
   }
+  .main-inner {
+    max-width: 100%;
+    padding: var(--spacing-2);
+  }
 }
 
 @media (max-width: 768px) {
@@ -158,7 +162,7 @@
     flex-direction: column;
   }
   .main-inner {
-    padding: 0;
+    padding: var(--spacing-1);
   }
   .mobile-header {
     display: flex;

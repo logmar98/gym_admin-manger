@@ -68,9 +68,7 @@ const SidebarLayout = ({ children }) => {
         </button>
       </aside>
       <main className="main-content">
-        <header className="main-header">
-          {/* You can add a dynamic page title here if desired */}
-        </header>
+      
         <div className="main-inner">
           {children}
         </div>
