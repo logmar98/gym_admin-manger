@@ -139,12 +139,22 @@ const Attendance = () => {
   };
 
   const handleError = (err) => {
-    if (err && err.message && err.message.length > 2) {
-      setQRError('QR Scan Error: ' + err.message);
-    } else if (typeof err === 'string' && err.length > 2) {
-      setQRError('QR Scan Error: ' + err);
+    const msg = (err && err.message) ? err.message : (typeof err === 'string' ? err : '');
+    // Suppress common scanning errors that are not actionable
+    if (
+      msg &&
+      (
+        msg.includes('no multiformat readers') ||
+        msg.includes('no QR code found') ||
+        msg.includes('parse error')
+      )
+    ) {
+      setQRError('');
+      return;
+    }
+    if (msg && msg.length > 2) {
+      setQRError('QR Scan Error: ' + msg);
     } else {
-      // Ignore or clear error for single-letter or non-informative errors
       setQRError('');
     }
   };
