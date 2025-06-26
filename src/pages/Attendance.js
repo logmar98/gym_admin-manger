@@ -139,12 +139,13 @@ const Attendance = () => {
   };
 
   const handleError = (err) => {
-    if (err && err.message) {
+    if (err && err.message && err.message.length > 2) {
       setQRError('QR Scan Error: ' + err.message);
-    } else if (err) {
-      setQRError('QR Scan Error: ' + String(err));
+    } else if (typeof err === 'string' && err.length > 2) {
+      setQRError('QR Scan Error: ' + err);
     } else {
-      setQRError('QR Scan Error');
+      // Ignore or clear error for single-letter or non-informative errors
+      setQRError('');
     }
   };
 
