@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addDoc, collection, getDocs, query, orderBy, limit, startAfter } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, orderBy, limit, startAfter, startAt, endAt } from 'firebase/firestore';
 import { db } from '../firebase';
 import MemberTable from '../components/MemberTable';
 import './Members.css';
@@ -17,8 +17,8 @@ const Members = () => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [sortField, setSortField] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
+  const [sortField, setSortField] = useState('joinDate');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
@@ -30,9 +30,9 @@ const Members = () => {
   const fetchMembers = async (reset = true) => {
     setLoading(true);
     try {
-      let q = query(collection(db, 'members'), orderBy('name'), limit(10));
+      let q = query(collection(db, 'members'), orderBy('joinDate', 'desc'), limit(10));
       if (!reset && lastVisible) {
-        q = query(collection(db, 'members'), orderBy('name'), startAfter(lastVisible), limit(10));
+        q = query(collection(db, 'members'), orderBy('joinDate', 'desc'), startAfter(lastVisible), limit(10));
       }
       const querySnapshot = await getDocs(q);
       const membersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -45,6 +45,32 @@ const Members = () => {
       setHasMore(querySnapshot.docs.length === 10);
     } catch (error) {
       console.error('Error fetching members:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMembersBySearch = async (searchTerm) => {
+    setLoading(true);
+    try {
+      // Firestore does not support OR queries directly, so search by name only (for now)
+      let q = query(
+        collection(db, 'members'),
+        orderBy('name'),
+        // Firestore queries are case-sensitive and only support prefix search
+        // For a more advanced search, you would need to add additional fields or use a 3rd party search
+        // Here, we use startAt/endAt for prefix search
+        startAt(searchTerm),
+        endAt(searchTerm + '\uf8ff'),
+        limit(10)
+      );
+      const querySnapshot = await getDocs(q);
+      const membersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMembers(membersData);
+      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+      setHasMore(querySnapshot.docs.length === 10);
+    } catch (error) {
+      console.error('Error searching members:', error);
     } finally {
       setLoading(false);
     }
@@ -133,6 +159,11 @@ const Members = () => {
                 placeholder="Search members by name..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    fetchMembersBySearch(search);
+                  }
+                }}
                 className="member-search-input"
               />
             </div>

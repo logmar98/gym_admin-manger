@@ -167,6 +167,7 @@ const Payments = () => {
 
   const getOverduePayments = () => {
     return members.filter(member => {
+      if (member.status !== 'active') return false;
       const paymentStatus = getPaymentStatus(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate);
       return paymentStatus.status === 'overdue';
     });

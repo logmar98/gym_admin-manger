@@ -4,6 +4,26 @@ import { db } from '../firebase';
 import dayjs from 'dayjs';
 import './Dashboard.css';
 
+const getPaymentStatus = (lastPaymentDate, joinDate, joinDay, nextPaymentDate) => {
+  if (nextPaymentDate) {
+    const now = dayjs();
+    const dueDate = dayjs(nextPaymentDate);
+    if (now.isBefore(dueDate, 'day')) {
+      const daysLeft = dueDate.diff(now, 'day');
+      return { status: 'current', days: `${daysLeft} days left`, color: 'green' };
+    } else if (now.isAfter(dueDate, 'day')) {
+      const daysLate = now.diff(dueDate, 'day');
+      if (daysLate <= 5) return { status: 'warning', days: `${daysLate} days late`, color: 'yellow' };
+      if (daysLate > 5 && daysLate <= 15) return { status: 'late', days: `${daysLate} days late`, color: 'orange' };
+      return { status: 'overdue', days: `${daysLate} days late`, color: 'red' };
+    } else {
+      return { status: 'current', days: 'Due today', color: 'green' };
+    }
+  }
+  // If nextPaymentDate is missing, always return overdue
+  return { status: 'overdue', days: 'No payment', color: 'red' };
+};
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalMembers: 0,
@@ -45,7 +65,14 @@ const Dashboard = () => {
         }
       });
 
-      const pendingPayments = Math.floor(totalMembers * 0.2);
+      // Calculate pending payments: active members with overdue status
+      const pendingPayments = membersSnapshot.docs.filter(doc => {
+        const data = doc.data();
+        if (data.status !== 'active') return false;
+        const paymentStatus = getPaymentStatus(data.lastPaymentDate, data.joinDate, data.joinDay, data.nextPaymentDate);
+        return paymentStatus.status === 'overdue';
+      }).length;
+
       setStats({
         totalMembers,
         activeMembers,

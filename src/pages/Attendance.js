@@ -151,7 +151,11 @@ const Attendance = () => {
           id: logDoc.id,
           ...logData,
           memberName: memberData?.name || 'Unknown Member',
-          memberEmail: memberData?.email || 'No Email'
+          memberEmail: memberData?.email || 'No Email',
+          lastPaymentDate: memberData?.lastPaymentDate || null,
+          joinDate: memberData?.joinDate || null,
+          joinDay: memberData?.joinDay || null,
+          nextPaymentDate: memberData?.nextPaymentDate || null
         });
       }
       if (reset) {
@@ -321,6 +325,27 @@ const Attendance = () => {
   const filteredLogs = getFilteredLogs();
   const stats = getAttendanceStats();
 
+  // Add getPaymentStatus function from Payments.js
+  const getPaymentStatus = (lastPaymentDate, joinDate, joinDay, nextPaymentDate) => {
+    if (nextPaymentDate) {
+      const now = dayjs();
+      const dueDate = dayjs(nextPaymentDate);
+      if (now.isBefore(dueDate, 'day')) {
+        const daysLeft = dueDate.diff(now, 'day');
+        return { status: 'current', days: `${daysLeft} days left`, color: 'green' };
+      } else if (now.isAfter(dueDate, 'day')) {
+        const daysLate = now.diff(dueDate, 'day');
+        if (daysLate <= 5) return { status: 'warning', days: `${daysLate} days late`, color: 'yellow' };
+        if (daysLate > 5 && daysLate <= 15) return { status: 'late', days: `${daysLate} days late`, color: 'orange' };
+        return { status: 'overdue', days: `${daysLate} days late`, color: 'red' };
+      } else {
+        return { status: 'current', days: 'Due today', color: 'green' };
+      }
+    }
+    // If nextPaymentDate is missing, always return overdue
+    return { status: 'overdue', days: 'No payment', color: 'red' };
+  };
+
   return (
     <>
 
@@ -466,37 +491,49 @@ const Attendance = () => {
                     <th>Email</th>
                     <th>Date</th>
                     <th>Time</th>
+                    <th>Payment Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {logs.map(log => (
-                    <tr key={log.id}>
-                      <td>
-                        <span className="member-id">{log.memberId}</span>
-                      </td>
-                      <td>
-                        <div className="member-info">
-                          <span className="member-name">{log.memberName}</span>
-                        </div>
-                      </td>
-                      <td>{log.memberEmail}</td>
-                      <td>
-                        <div className="date-info">
-                          <span className="date">
-                            {dayjs(log.timestamp?.toDate()).format('MMM DD, YYYY')}
+                  {logs.map(log => {
+                    const paymentStatus = getPaymentStatus(log.lastPaymentDate, log.joinDate, log.joinDay, log.nextPaymentDate);
+                    return (
+                      <tr key={log.id}>
+                        <td>
+                          <span className="member-id">{log.memberId}</span>
+                        </td>
+                        <td>
+                          <div className="member-info">
+                            <span className="member-name">{log.memberName}</span>
+                          </div>
+                        </td>
+                        <td>{log.memberEmail}</td>
+                        <td>
+                          <div className="date-info">
+                            <span className="date">
+                              {dayjs(log.timestamp?.toDate()).format('MMM DD, YYYY')}
+                            </span>
+                            <span className="day">
+                              {dayjs(log.timestamp?.toDate()).format('dddd')}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="time">
+                            {dayjs(log.timestamp?.toDate()).format('HH:mm:ss')}
                           </span>
-                          <span className="day">
-                            {dayjs(log.timestamp?.toDate()).format('dddd')}
+                        </td>
+                        <td>
+                          <span className={`payment-status ${paymentStatus.status}`} style={{ color: '#fff' }}>
+                            {paymentStatus.status.charAt(0).toUpperCase() + paymentStatus.status.slice(1)}
+                            <span style={{ fontWeight: 400, marginLeft: 6, fontSize: '0.95em', color: '#fff' }}>
+                              {paymentStatus.days}
+                            </span>
                           </span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="time">
-                          {dayjs(log.timestamp?.toDate()).format('HH:mm:ss')}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
