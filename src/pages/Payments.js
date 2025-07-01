@@ -13,6 +13,7 @@ const Payments = () => {
   const [loadingPayments, setLoadingPayments] = useState(true);
   const [lastPaymentVisible, setLastPaymentVisible] = useState(null);
   const [hasMorePayments, setHasMorePayments] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
     fetchMembers();
@@ -212,27 +213,19 @@ const Payments = () => {
 
   // Sort and filter members for Payment Status table
   const activeMembers = members.filter(member => member.status === 'active');
+  const getStatusOrder = (member) => {
+    const paymentStatus = getPaymentStatus(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate).status;
+    const order = { overdue: 1, late: 2, warning: 3, current: 4 };
+    return order[paymentStatus] || 5;
+  };
   const sortedMembers = [...activeMembers].sort((a, b) => {
-    if (sortField === 'name') {
-      if (sortOrder === 'asc') return a.name.localeCompare(b.name);
-      else return b.name.localeCompare(a.name);
-    } else if (sortField === 'status') {
-      // Custom order: current < warning < late < overdue
-      const getStatusOrder = (member) => {
-        const paymentStatus = getPaymentStatus(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate).status;
-        const order = { current: 1, warning: 2, late: 3, overdue: 4 };
-        return order[paymentStatus] || 5;
-      };
-      if (sortOrder === 'asc') return getStatusOrder(a) - getStatusOrder(b);
-      else return getStatusOrder(b) - getStatusOrder(a);
-    } else if (sortField === 'lastPayment') {
-      const aDate = a.lastPaymentDate ? new Date(a.lastPaymentDate) : new Date(0);
-      const bDate = b.lastPaymentDate ? new Date(b.lastPaymentDate) : new Date(0);
-      if (sortOrder === 'asc') return aDate - bDate;
-      else return bDate - aDate;
-    }
-    return 0;
+    const orderA = getStatusOrder(a);
+    const orderB = getStatusOrder(b);
+    if (orderA !== orderB) return orderA - orderB;
+    // fallback: sort by name
+    return a.name.localeCompare(b.name);
   });
+  const pagedMembers = sortedMembers.slice(0, visibleCount);
 
   // Toggle sort order or change field
   const handleSortField = (field) => {
@@ -398,7 +391,7 @@ const Payments = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedMembers.map(member => {
+                  {pagedMembers.map(member => {
                     const paymentStatus = getPaymentStatus(member.lastPaymentDate, member.joinDate, member.joinDay, member.nextPaymentDate);
                     return (
                       <tr key={member.id}>
@@ -434,6 +427,11 @@ const Payments = () => {
                 </tbody>
               </table>
             </div>
+            {sortedMembers.length > visibleCount && (
+              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <button className="btn btn-primary" onClick={() => setVisibleCount(visibleCount + 10)}>Show More</button>
+              </div>
+            )}
           </div>
 
           {/* Global Payments Report */}
