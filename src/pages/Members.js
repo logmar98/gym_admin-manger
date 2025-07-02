@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addDoc, collection, getDocs, query, orderBy, limit, startAfter, startAt, endAt } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, orderBy, limit, startAfter, startAt, endAt, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import MemberTable from '../components/MemberTable';
 import './Members.css';
@@ -76,22 +76,34 @@ const Members = () => {
     }
   };
 
-  const handleAddMember = async (e) => {
+  const handleSaveMember = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       // Name is required
       return;
     }
     try {
-      await addDoc(collection(db, 'members'), {
-        name: formData.name,
-        email: formData.email.trim() === '' ? 'None' : formData.email,
-        phone: formData.phone.trim() === '' ? 'None' : formData.phone,
-        joinDate: formData.joinDate,
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+      if (editingMember) {
+        // Update existing member
+        await updateDoc(doc(db, 'members', editingMember.id), {
+          name: formData.name,
+          email: formData.email.trim() === '' ? 'None' : formData.email,
+          phone: formData.phone.trim() === '' ? 'None' : formData.phone,
+          joinDate: formData.joinDate,
+          updatedAt: new Date()
+        });
+      } else {
+        // Add new member
+        await addDoc(collection(db, 'members'), {
+          name: formData.name,
+          email: formData.email.trim() === '' ? 'None' : formData.email,
+          phone: formData.phone.trim() === '' ? 'None' : formData.phone,
+          joinDate: formData.joinDate,
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+      }
       setFormData({
         name: '',
         email: '',
@@ -99,9 +111,10 @@ const Members = () => {
         joinDate: new Date().toISOString().split('T')[0]
       });
       setShowAddForm(false);
+      setEditingMember(null);
       fetchMembers();
     } catch (error) {
-      console.error('Error adding member:', error);
+      console.error('Error saving member:', error);
     }
   };
 
@@ -190,7 +203,7 @@ const Members = () => {
                     ✕
                   </button>
                 </div>
-                <form onSubmit={handleAddMember} className="member-form">
+                <form onSubmit={handleSaveMember} className="member-form">
                   <div className="form-group">
                     <label htmlFor="name">Full Name *</label>
                     <input

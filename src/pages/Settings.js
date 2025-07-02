@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import './Settings.css';
+import { getAuth, signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
   const [price, setPrice] = useState('');
@@ -10,6 +12,7 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPrice = async () => {
@@ -45,6 +48,12 @@ const Settings = () => {
     }
   };
 
+  const handleLogout = async () => {
+    const auth = getAuth();
+    await signOut(auth);
+    navigate('/login');
+  };
+
   return (
     <div className="settings-page">
       <div className="settings-card">
@@ -74,6 +83,14 @@ const Settings = () => {
             {error && <div className="settings-error">{error}</div>}
           </form>
         )}
+        <button
+          type="button"
+          className="settings-logout-btn"
+          style={{ display: 'block', margin: '24px auto 0 auto', background: '#dc3545', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 6, fontWeight: 600, cursor: 'pointer' }}
+          onClick={handleLogout}
+        >
+          Log Out
+        </button>
       </div>
     </div>
   );
